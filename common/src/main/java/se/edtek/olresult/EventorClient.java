@@ -1,16 +1,21 @@
 package se.edtek.olresult;
 
 
+import se.edtek.olresult.eventormodel.Event;
 import se.edtek.olresult.eventormodel.PersonList;
+import se.edtek.olresult.eventormodel.ResultList;
 import se.edtek.olresult.eventormodel.ResultListList;
 import se.edtek.olresult.internalmodel.Lopare;
 import se.edtek.olresult.internalmodel.Resultat;
+import se.edtek.olresult.internalmodel.Tavling;
 import se.edtek.olresult.mapper.Mapper;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,7 +36,7 @@ public class EventorClient {
         return pl.persons.stream().map(p -> Mapper.asLopare(p)).collect(Collectors.toList());
     }
 
-    public List<Resultat> getResultat(String loparId, LocalDate from, LocalDate to) {
+    public List<Resultat> getResultat(String loparEventorId, LocalDate from, LocalDate to) {
 
         Client client = ClientBuilder.newClient();
         WebTarget target = client.target(uri).path("api/results/person");
@@ -39,13 +44,47 @@ public class EventorClient {
         String fromDate = from.toString();
         String toDate = to.toString();
 
-        target = target.queryParam("personId", loparId).queryParam("fromDate", fromDate).queryParam("toDate", toDate);
+        target = target.queryParam("personId", loparEventorId).queryParam("fromDate", fromDate).queryParam("toDate", toDate);
 
         ResultListList rll = doGet(target, ResultListList.class);
 
-        System.out.println("a");
+        if (rll.resultLists == null || rll.resultLists.isEmpty()) {
+            return Collections.EMPTY_LIST;
+        }
 
-        return rll.resultLists.stream().map(rl -> Mapper.asResultat(rl.event, rl.classResult, loparId)).collect(Collectors.toList());
+        List<Resultat> fetchedResults = new ArrayList<>();
+        for (ResultList rl : rll.resultLists) {
+
+            if (rl.event.eventForm.equals("RelaySingleDay")) {
+                fetchedResults.add(Mapper.asRelaySingleDayResult(rl.event));
+            }
+
+            else if (rl.event.eventForm.equals("IndMultiDay")) {
+                fetchedResults.addAll(Mapper.asIndMultiDayResult(rl.event, rl.classResult, loparEventorId));
+            }
+
+            else if (rl.event.eventForm.equals("IndSingleDay")) {
+                fetchedResults.add(Mapper.asIndSingleDayResult(rl.event, rl.classResult, loparEventorId));
+            }
+            else if (rl.event.eventForm.equals("PatrolSingleDay")) {
+                fetchedResults.add(Mapper.asPatrolSingleDayResult(rl.event));
+            }
+            else {
+                throw new RuntimeException("Unknown eventForm: " + rl.event.eventForm);
+            }
+
+        }
+
+        return fetchedResults;
+    }
+
+    public Tavling getTavling(String eventId) {
+        Client client = ClientBuilder.newClient();
+        WebTarget target = client.target(uri).path("api/event/" + eventId);
+
+        Event event = doGet(target, Event.class);
+
+        return Mapper.asTavling(event);
     }
 
     private <T> T doGet(WebTarget target, Class<T> clazz) {

@@ -14,10 +14,11 @@ public class LopareMapper implements ResultSetMapper<Lopare>{
     public Lopare map(int i, ResultSet resultSet, StatementContext statementContext) throws SQLException {
         Lopare lopare = new Lopare();
 
+        lopare.id = resultSet.getString("id");
         lopare.fornamn = resultSet.getString("fornamn");
         lopare.efternamn = resultSet.getString("efternamn");
         lopare.eventorId = resultSet.getString("eventorid");
-        lopare.fodelseDatum = LocalDate.parse(resultSet.getString("fodelsdatum"));
+        lopare.fodelseDatum = LocalDate.parse(resultSet.getString("fodelsedatum"));
 
         return lopare;
     }
