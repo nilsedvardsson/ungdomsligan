@@ -16,10 +16,10 @@ import java.util.UUID;
 public class FetchResultat extends AbstractProcess {
 
     public void run() {
-        LocalDate from = LocalDate.of(2016, 1, 1);
-        LocalDate to = LocalDate.of(2016, 12, 31);
+        LocalDate from = LocalDate.of(2018, 1, 1);
+        LocalDate to = LocalDate.of(2018, 12, 02);
 
-        LocalDate oldestRunnerNotIncluded = LocalDate.of(1999, 12, 31);
+        LocalDate oldestRunnerNotIncluded = LocalDate.of(2001, 12, 31);
 
         DBI dbi = getDBI();
         LopareDAO dao = dbi.onDemand(LopareDAO.class);

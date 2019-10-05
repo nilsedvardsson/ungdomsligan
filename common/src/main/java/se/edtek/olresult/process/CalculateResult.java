@@ -44,7 +44,9 @@ public class CalculateResult extends AbstractProcess {
             }
 
             if (r.placering == 1) {
-                numVictories++;
+                if (r.poang > 0) {  // räkna endast vinster för godkända tävlingar
+                    numVictories++;
+                }
             }
 
             if (r.poang > 0) {

@@ -24,8 +24,6 @@ public class EventorClient {
     String apiKey = "b05deb67157844d8bfd1f341555d70f2";
     String uri = "https://eventor.orientering.se";
 
-
-
     public List<Lopare> getLopare(String organisationId) {
 
         Client client = ClientBuilder.newClient();
